@@ -86795,4 +86795,57 @@
     return p5SOUND;
   }(sndcore, master, helpers, errorHandler, panner, soundfile, amplitude, fft, signal, oscillator, env, pulse, noise, audioin, filter, eq, panner3d, listener3d, delay, reverb, metro, looper, soundloop, compressor, soundRecorder, peakdetect, gain, monosynth, polysynth, distortion, audioVoice, monosynth, polysynth);
 
-export default p5
+const realP5 = p5
+
+class TinyP5 {
+  constructor(...args) {
+    new realP5(...args)
+  }
+}
+
+let assignGlobalFunctions = () => {
+  let globalFunctions = [
+    'preload',
+    'setup',
+    'draw',
+    'touchStarted',
+    'touchMoved',
+    'touchEnded',
+    'mouseMoved',
+    'mouseDragged',
+    'mousePressed',
+    'mouseReleased',
+    'mouseClicked',
+    'doubleClicked',
+    'mouseWheel',
+    'deviceMoved',
+    'deviceTurned',
+    'deviceShaken',
+    'keyPressed',
+    'keyReleased',
+    'keyTyped',
+    'keyIsDown',
+  ]
+
+  globalFunctions.forEach(name => {
+    if (TinyP5[name]) {
+      window[name] = (...args) => TinyP5[name](...args)
+    }
+  })
+}
+
+// Start p5 once draw or start are defined
+let waitForSetupOrDraw = () => {
+  setTimeout(() => {
+    if (TinyP5.draw || TinyP5.setup) {
+      assignGlobalFunctions()
+      new TinyP5()
+    } else {
+      waitForSetupOrDraw()
+    }
+  }, 1)
+}
+
+waitForSetupOrDraw()
+
+export default TinyP5
